@@ -150,13 +150,28 @@ rndSelect xs n
       return [xs !! p | p <- pos]
 
 -- Problem 24
-diffSelect :: Int -> Int -> IO[a]
+diffSelect :: Int -> Int -> IO [Int]
 diffSelect 0 _ = return []
-diffSelect n m = undefined
+diffSelect n m = execWriterT $ return [1..m] >>= foldr (<=<) return (replicate n popRnd)
 
 popRnd :: (Eq a) => [a] -> WriterT [a] IO [a]
 popRnd [] = error "Empty array"
 popRnd xs = do
-  x <- fmap head $ lift $ rndSelect xs 1
+  x <- liftM head $ liftIO $ rndSelect xs 1
   tell [x]
   return $ filter (/= x) xs
+
+-- Problem 25
+rndPermu :: (Eq a) => [a] -> IO [a]
+rndPermu xs = execWriterT $ return xs >>= foldr (<=<) return (replicate (length xs) popRnd)
+
+-- Problem 26
+combinations :: Int -> [a] -> [[a]]
+combinations 0 _ = [[]]
+combinations _ [] = [[]]
+combinations n (x:xs) = x_start ++ others
+  where
+    x_start = [x : rest | rest <- combinations (n - 1) xs]
+    others = if n <= length xs then combinations n xs else []
+
+-- Problem 27
